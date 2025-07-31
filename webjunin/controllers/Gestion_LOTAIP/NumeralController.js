@@ -18,19 +18,36 @@ export class NumeralController{
     }
 
 
-    static async create(request,res){
-        try{
-            const validar = validateNumeral(request.body)
-            if(!validar.success){
-                return res.status(400).json({ error: JSON.parse(validar.error.message)})
-            }    
-            // const nuevaCategoria = request.body;
-            const result = await NumeralModel.create(validar.data);
-            res.status(201).json(result);
-        }catch (error){
-            res.status(500).json({message:'Internal server error'});
-        }
+static async create(request, res) {
+  try {
+    // Agregamos campos extra antes de validar
+    const input = {
+  ...request.body,
+  articulo: Number(request.body.articulo),
+  fechaRegistro: new Date(),
+  estadoEliminado: false
+};
+
+    console.log(input); // Opcional: para depuración
+
+    const validar = validateNumeral(input);
+
+    if (!validar.success) {
+      console.log('Error de validación:', validar.error);
+      return res.status(400).json({
+        error: JSON.parse(validar.error.message)
+      });
     }
+
+    const result = await NumeralModel.create(validar.data);
+    return res.status(201).json(result);
+
+  } catch (error) {
+    console.log('Error del servidor:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 
     static async search(request,res){
         console.log(request.body);

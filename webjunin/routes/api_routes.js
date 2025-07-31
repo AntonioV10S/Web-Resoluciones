@@ -13,7 +13,18 @@ import {ResolucionController} from '../controllers/Gestion_resoluciones/Resoluci
 import {CalendarController} from '../controllers/Gestion_transito/CalendarController.js';
 import {TipoBoletinController} from '../controllers/Gestion_boletin/Tipo_BoletinController.js';
 import { BoletinController } from '../controllers/Gestion_boletin/BoletinController.js';
-import { middwAuth } from '../middleware/authenticate.js';
+
+import multer from 'multer';
+
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => {
+    const nombreFinal = `calendar_${Date.now()}_${file.originalname}`;
+    cb(null, nombreFinal);
+  }
+});
+
+const upload = multer({ storage });
 
 
 export const ApiRouter = Router();
@@ -97,9 +108,9 @@ ApiRouter.delete('/resolucion/:id', ResolucionController.delete);
 
 //Calendarizacion de transito
 ApiRouter.get('/calendarizacion', CalendarController.getAll);
-ApiRouter.post('/calendarizacion', CalendarController.create);
+ApiRouter.post('/calendarizacion', upload.single('imagen'), CalendarController.create);
 ApiRouter.get('/calendarizacion/:id', CalendarController.search);
-ApiRouter.patch('/calendarizacion/:id', CalendarController.update);
+ApiRouter.patch('/calendarizacion/:id', upload.single('imagen'), CalendarController.update);
 ApiRouter.delete('/calendarizacion/:id', CalendarController.delete);
 
 //Gestion boletines
@@ -112,7 +123,22 @@ ApiRouter.delete('/tipo_boletin/:id', TipoBoletinController.delete);
 
 //--------- boletines
 ApiRouter.get('/boletin', BoletinController.getAll);
-ApiRouter.post('/boletin', BoletinController.create);
+ApiRouter.post('/boletin', upload.single('imagen'), BoletinController.create);
 ApiRouter.get('/boletin/:id', BoletinController.search);
-ApiRouter.patch('/boletin/:id', BoletinController.update);
+ApiRouter.patch('/boletin/:id', upload.single('imagen'), BoletinController.update);
 ApiRouter.delete('/boletin/:id', BoletinController.delete);
+
+
+//--------------Tipo Local
+ApiRouter.get('/tipo_local', BoletinController.getAll);
+ApiRouter.post('/tipo_local', BoletinController.create);
+ApiRouter.get('/tipo_local/:id', BoletinController.search);
+ApiRouter.patch('/tipo_local/:id', BoletinController.update);
+ApiRouter.delete('/tipo_local/:id', BoletinController.delete);
+
+//-------------Local
+ApiRouter.get('/local', BoletinController.getAll);
+ApiRouter.post('/local', upload.single('imagen'), BoletinController.create);
+ApiRouter.get('/local/:id', BoletinController.search);
+ApiRouter.patch('/local/:id', upload.single('imagen'), BoletinController.update);
+ApiRouter.delete('/local/:id', BoletinController.delete);

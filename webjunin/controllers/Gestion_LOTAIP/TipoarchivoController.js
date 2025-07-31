@@ -6,31 +6,56 @@ const require = createRequire(import.meta.url)
 
 export class TipoArchivoController{
 
-    static async getAll(request, res){
-        try{
-            const tipo_archivos = await TipoArchivoModel.findAll(
-                {where: {estadoEliminado: false} }
-            );
-            return res.status(200).json({tipo_archivos});
-        }catch(error){
-            return res.status(500).json({message: 'Internal server error'});
-        }
+    static async getAll(request, res) {
+    try {
+        const tipo_archivos = await TipoArchivoModel.findAll({
+            where: { estadoEliminado: false }
+        });
+
+        const fechaActual = new Date().toISOString().split('T')[0]; // "2025-07-16"
+
+        return res.status(200).json({
+            tipo_archivos,
+            fechaActual
+        });
+            } catch (error) {
+                return res.status(500).json({ message: 'Internal server error' });
+            }
     }
 
-    static async create(request,res){
-        try{
-            const validar = validateTipoArchivo(request.body)
-            if(!validar.success){
-                return res.status(400).json({ error: JSON.parse(validar.error.message)})
-            }    
-            // const nuevaCategoria = request.body;
+
+
+        static async create(request, res) {
+        try {
+            //console.log('📥 Datos recibidos:', request.body);
+
+            const input = {
+            ...request.body,
+            fechaRegistro: new Date(), 
+            estadoEliminado: false
+            };
+            console.log(input);
+
+            const validar = validateTipoArchivo(input);
+
+            if (!validar.success) {
+            console.log('Error de validación:', validar.error);
+            return res.status(400).json({
+                error: JSON.parse(validar.error.message)
+            });
+            }
+
             const result = await TipoArchivoModel.create(validar.data);
-            res.status(201).json(result);
-        }catch (error){
-            console.log(error);
-            res.status(500).json({message:'Internal server error'});
+            return res.status(201).json(result);
+
+        } catch (error) {
+            console.log('Error del servidor:', error);
+            return res.status(500).json({ message: 'Internal server error' });
         }
-    }
+        }
+
+
+
 
     static async search(request,res){
         try{

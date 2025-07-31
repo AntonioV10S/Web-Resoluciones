@@ -13,7 +13,7 @@ export class LotaipController{
         try{
             const lotaip = await LotaipModel.findAll({
                 where: {estadoEliminado: false}, 
-                attributes: { exclude: ['estadoEliminado','fechaRegistro','id_tipo_archivo','id_numeral','id_year_mes'] },
+                attributes: { exclude: ['estadoEliminado','id_tipo_archivo','id_numeral','id_year_mes'] },
                 include: [{
                     model: TipoArchivoModel,
                     attributes:['descripcion']
@@ -32,20 +32,38 @@ export class LotaipController{
         }
     }
 
-    static async create(request,res){
-        try{
-            const validar = validatelotaip(request.body)
-            if(!validar.success){
-                return res.status(400).json({ error: JSON.parse(validar.error.message)})
-            }    
-            // const nuevaCategoria = request.body;
-            const result = await LotaipModel.create(validar.data);
-            res.status(201).json(result);
-        }catch (error){
-            console.log(error);
-            res.status(500).json({message:'Internal server error'});
-        }
+static async create(request, res) {
+  try {
+    // Construimos input con campos extra y conversiones si hace falta
+    const input = {
+      ...request.body,
+      id_year_mes: Number(request.body.id_year_mes),
+      id_tipo_archivo: Number(request.body.id_tipo_archivo),
+      id_numeral: Number(request.body.id_numeral),
+      fechaRegistro: new Date(),
+      estadoEliminado: false
+    };
+
+    console.log(input); // Para depuración
+
+    const validar = validatelotaip(input);
+
+    if (!validar.success) {
+      console.log('Error de validación:', validar.error);
+      return res.status(400).json({
+        error: JSON.parse(validar.error.message)
+      });
     }
+
+    const result = await LotaipModel.create(validar.data);
+    return res.status(201).json(result);
+
+  } catch (error) {
+    console.log('Error del servidor:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 
     static async search(request,res){
         try{
